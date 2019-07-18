@@ -1,6 +1,6 @@
 //global variables
-let competitorName = "";
-let competitorKey = "";
+let opponentName = "";
+let opponentKey = "";
 
 // Your web app's Firebase configuration
 var firebaseConfig = {
@@ -16,7 +16,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 let database = firebase.database();
 let playersRef = database.ref("/players");
-let challengesRef = database.ref("/challenges");
+let matchesRef = database.ref("/challenges");
 let thisPlayerKey = "";
 
 $("#button-enter-name").on("click", function() {
@@ -62,19 +62,38 @@ playersRef.on("child_removed", function(snapshot) {
     $(`button[data-key=${snapshot.key}]`).remove();
 });
 
+// clicking on a competitor's name
 $(document).on("click", ".competitor", function() {
     console.log("here");
     console.log("clicked " + $(this).text());
-    competitorName = $(this).text();
-    competitorKey = $(this).attr("data-key");
-    $("#challenge-comm").text(`Do you want to challenge ${competitorName} to play rock/paper/scissors?`);
+    opponentName = $(this).text();
+    opponentKey = $(this).attr("data-key");
+    $("#button-challenge").attr("data-action", "challenge");
+    $("#challenge-comm").text(`Do you want to challenge ${opponentName} to play rock/paper/scissors?`);
 
 });
 
+// sending or accepting a challenge
 $("#button-challenge").on("click", function() {
-    $("#challenge-comm").text(`Waiting for ${competitorName} to accept your challenge!`);
-    let challengeRef = challengesRef.push({
-        to: competitorKey,
-        from: thisPlayerKey
-    });
+    if ($(this).attr("data-action") === "challenge") {
+        $("#challenge-comm").text(`Waiting for ${opponentName} to accept your challenge!`);
+        let matchRef = matchesRef.push({
+            to: opponentKey,
+            from: thisPlayerKey
+        });
+    }
+    else if ($(this).attr("data-action") === "accept") {
+        
+    }
+});
+
+// receiving a challenge from another player
+matchesRef.on("child_added", function(snapshot) {
+    if (snapshot.val().to === thisPlayerKey) {
+        opponentName = $(`button[data-key="${snapshot.val().from}"]`).text();
+        opponentKey = $(`button[data-key="${snapshot.val().from}"]`).attr("data-key");
+        $("#challenge-comm").text(`${opponentName} is challenging you to play rock/paper/scissors. Accept?`);
+        $("#button-challenge").attr("data-action", "accept");
+        $('#challenge-modal').modal("show");
+    }
 });
