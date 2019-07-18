@@ -2,6 +2,9 @@
 let opponentName = "";
 let opponentKey = "";
 
+// hide game controls
+$("#game-controls").hide();
+
 // Your web app's Firebase configuration
 var firebaseConfig = {
     apiKey: "AIzaSyDoDBuWPnXPUH9rTBuYf-Eav8sJCvVXQcI",
@@ -17,6 +20,7 @@ firebase.initializeApp(firebaseConfig);
 let database = firebase.database();
 let playersRef = database.ref("/players");
 let matchesRef = database.ref("/challenges");
+let matchRef = "";
 let thisPlayerKey = "";
 
 $("#button-enter-name").on("click", function() {
@@ -75,21 +79,36 @@ $(document).on("click", ".competitor", function() {
 
 // sending or accepting a challenge
 $("#button-challenge").on("click", function() {
+    console.log("clicked YES");
     if ($(this).attr("data-action") === "challenge") {
         $("#challenge-comm").text(`Waiting for ${opponentName} to accept your challenge!`);
-        let matchRef = matchesRef.push({
+        matchRef = matchesRef.push({
             to: opponentKey,
-            from: thisPlayerKey
+            from: thisPlayerKey,
+            accepted: false
         });
-    }
+        console.log(matchRef);
+
+        matchRef.child("accepted").on("value", function(snapshot) {
+            if (snapshot.val() === true) {
+                console.log("opponent accepted!");
+                $('#challenge-modal').modal("hide");
+                // reveal game controls
+                $("#game-controls").show();
+            }
+        });
+    } // accepting a challenge
     else if ($(this).attr("data-action") === "accept") {
-        
+        matchRef.child("accepted").set(true); // won't affect other children
+        $('#challenge-modal').modal("hide");
+        $("#game-controls").show();
     }
 });
 
 // receiving a challenge from another player
 matchesRef.on("child_added", function(snapshot) {
     if (snapshot.val().to === thisPlayerKey) {
+        matchRef = snapshot.ref;
         opponentName = $(`button[data-key="${snapshot.val().from}"]`).text();
         opponentKey = $(`button[data-key="${snapshot.val().from}"]`).attr("data-key");
         $("#challenge-comm").text(`${opponentName} is challenging you to play rock/paper/scissors. Accept?`);
