@@ -63,28 +63,47 @@
      <!-- Modal - Verify/Accept Challenge -->  
      <div class="modal fade" id="challenge-modal" tabindex="-1" role="dialog" aria-labelledby="challengeModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="challengeModalLabel">Challenge?</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="challengeModalLabel">Challenge?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="challenge-comm"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary" id="button-challenge">Yes</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <p id="challenge-comm"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                <button type="button" class="btn btn-primary" id="button-challenge">Yes</button>
-            </div>
-        </div>
         </div>
     </div>
 
-    <div id= "game-controls">
-        <button type="button" class="btn btn-primary" id="rock"><i class="fas fa-hand-rock"></i></button>
-        <button type="button" class="btn btn-primary" id="paper"><i class="fas fa-hand-paper"></i></button>
-        <button type="button" class="btn btn-primary" id="scissors"><i class="fas fa-hand-scissors"></i></button>
+    <div class="container">
+        <div class="row">
+            <div id="scoreboard" class="col">
+                <div id="total-wins">Wins: 0</div>
+                <div id="total-losses">Losses: 0</div>
+                <div id="total-draws">Draws: 0</div>
+            </div>
+            <div id="announcer"class="col">
+            </div>
+        </div>
+        <div class="row">
+            <div id="player-attack" class="col">
+            </div>
+            <div id="opponent-attack" class="col">
+            </div>
+        </div>
+        <div class="row">
+            <div id= "game-controls" class="col">
+                <button type="button" class="btn btn-primary attack" data-attack="rock"><i class="fas fa-hand-rock"></i></button>
+                <button type="button" class="btn btn-primary attack" data-attack="paper"><i class="fas fa-hand-paper"></i></button>
+                <button type="button" class="btn btn-primary attack" data-attack="scissors"><i class="fas fa-hand-scissors"></i></button>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

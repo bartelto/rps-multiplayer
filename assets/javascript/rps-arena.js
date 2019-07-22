@@ -1,6 +1,19 @@
 //global variables
+let playerName = "";
+let playerKey = "";
+let playerAttack = "";
+let isChallenger = false; // the challenger always initiates database communication
+
 let opponentName = "";
 let opponentKey = "";
+let opponentAttack = "";
+let challengerOutcome = "";
+
+let total = {
+    wins: 0,
+    losses: 0,
+    draws: 0
+};
 
 // hide game controls
 $("#game-controls").hide();
@@ -21,31 +34,34 @@ let database = firebase.database();
 let playersRef = database.ref("/players");
 let matchesRef = database.ref("/challenges");
 let matchRef = "";
-let thisPlayerKey = "";
+let playsRef = database.ref("/plays"); // for storing the moves from each match
+let playRef = "";
 
 $("#button-enter-name").on("click", function() {
     console.log("new player: " + $("#input-screen-name").val());
-     // Add user to the players list.
-     let playerRef = playersRef.push({
-         name: $("#input-screen-name").val()
-     });
-     console.log(playerRef);
-     // Remove user from the players list when they disconnect.
-     playerRef.onDisconnect().remove();
-     console.log("setting thisPlayerkey");
-     thisPlayerKey = playerRef.key;
-     flagThisPlayer($(`button[data-key=${thisPlayerKey}]`));
+    playerName = $("#input-screen-name").val().trim();
+    // Add user to the players list.
+    let playerRef = playersRef.push({
+        name: playerName
+    });
+    console.log(playerRef);
+
+    // Remove user from the database when they disconnect.
+    playerRef.onDisconnect().remove();
+    console.log("setting playerkey");
+    playerKey = playerRef.key;
+    flagThisPlayer($(`button[data-key=${playerKey}]`));
 });
 
 playersRef.on("child_added", function(snapshot) {
-    //console.log("child added");
+    //console.log("player added");
     let newPlayer = $("<button>")
         .text(snapshot.val().name)  
         .addClass("list-group-item list-group-item-action competitor")
         .attr('data-key', snapshot.key)
         .attr('data-toggle', "modal")
         .attr('data-target', '#challenge-modal');
-    if (snapshot.key === thisPlayerKey) {
+    if (snapshot.key === playerKey) {
         flagThisPlayer(newPlayer);
     }
     $("#players-list").append(newPlayer);
@@ -84,13 +100,14 @@ $("#button-challenge").on("click", function() {
         $("#challenge-comm").text(`Waiting for ${opponentName} to accept your challenge!`);
         matchRef = matchesRef.push({
             to: opponentKey,
-            from: thisPlayerKey,
+            from: playerKey,
             accepted: false
         });
         console.log(matchRef);
 
         matchRef.child("accepted").on("value", function(snapshot) {
-            if (snapshot.val() === true) {
+            if (snapshot.val() === true) { // opponent has accepted the challenge
+                isChallenger = true;
                 console.log("opponent accepted!");
                 $('#challenge-modal').modal("hide");
                 // reveal game controls
@@ -107,7 +124,7 @@ $("#button-challenge").on("click", function() {
 
 // receiving a challenge from another player
 matchesRef.on("child_added", function(snapshot) {
-    if (snapshot.val().to === thisPlayerKey) {
+    if (snapshot.val().to === playerKey) {
         matchRef = snapshot.ref;
         opponentName = $(`button[data-key="${snapshot.val().from}"]`).text();
         opponentKey = $(`button[data-key="${snapshot.val().from}"]`).attr("data-key");
@@ -116,3 +133,83 @@ matchesRef.on("child_added", function(snapshot) {
         $('#challenge-modal').modal("show");
     }
 });
+
+/////////////////////
+// GAME PLAY LOGIC //
+/////////////////////
+
+// player chooses an attack (rock, paper or scissors)
+$(".attack").click(function() {
+    playerAttack = $(this).attr("data-attack");
+
+    // display attack on screen
+    $("#player-attack").text(playerAttack);
+
+    if (isChallenger) { // challenger initiates the database communication
+        // Add attack to the attacks list on the database
+        let playRef = playsRef.push({
+            to: opponentKey,
+            attack: playerAttack
+        });
+
+        // challenger listens for defender's counterattack
+        playRef.child("counterattack").on("value", function(snapshot) {
+            if (snapshot.val() !== null && snapshot.val() !== "") {
+                opponentAttack = snapshot.val();
+                console.log("received a counterattack of " + opponentAttack);
+                // display opponent's attack on screen
+                $("#opponent-attack").text(opponentAttack);
+                // both sides have attacked; determine winner
+                challengerOutcome = determineOutcome();
+            }
+        });
+    } else if (opponentAttack !== "") { // player is defender, and the challenger has already attacked
+        // both sides have attacked; determine winner
+        challengerOutcome = determineOutcome();
+
+        // defender sends counterattack to challenger
+
+    }
+});
+
+// defender listens for challenger to make an attack
+playsRef.on("child_added", function(snapshot) {
+    if (snapshot.val().to === playerKey) { // i.e., the defender
+        opponentAttack = snapshot.val().attack;
+        // display opponent's attack on screen
+        $("#opponent-attack").text(opponentAttack);
+        console.log("received an attack of " + opponentAttack);
+        if (playerAttack !== "") {
+            // place counterattack in database
+            snapshot.child("counterattack").set(playerAttack);
+            // both sides have attacked; determine winner
+            challengerOutcome = determineOutcome();
+        }
+    }
+});
+
+function determineOutcome() { // from the perspective of the player
+    if (playerAttack === opponentAttack) {
+        total.draws++;
+        $("#total-draws").text(`Draws: ${total.draws}`);
+        $("#announcer").text("It's a draw!");
+        return "draw";
+    } else if (
+        (playerAttack === "rock" && opponentAttack === "paper") ||
+        (playerAttack === "paper" && opponentAttack === "scissors") ||
+        (playerAttack === "scissors" && opponentAttack === "rock")) {
+        total.losses++;
+        $("#total-losses").text(`Losses: ${total.losses}`);
+        $("#announcer").text("You win!");
+        return "lose";
+    } else {
+        $("#total-wins").text(`Wins: ${total.wins}`);
+        total.wins++;
+        $("#announcer").text(`${opponentName} wins!`);
+        return "win"; 
+    }   
+}
+
+function resetArena() {
+
+}
