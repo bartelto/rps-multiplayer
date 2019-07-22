@@ -22,16 +22,18 @@
     </header>
     <section id="instructions"> 
     </section>
-    <section id="other-players">
-        <h3>Available competitors</h2>
-        <div class="list-group" id="players-list">
+
+    <section id="competitors" class="container">
+        <div class="row">
+            <div class="col">
+                <h3>Available competitors</h2>
+                <div class="list-group" id="players-list">
+                </div>
+                 <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#login-modal">Enter the arena</button>
+            </div>
         </div>
     </section>
-
-    <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#login-modal">
-        Enter the arena
-    </button>
 
     <!-- Modal - Check In -->
     <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" aria-labelledby="challengeModalLabel" aria-hidden="true">
@@ -81,7 +83,7 @@
         </div>
     </div>
 
-    <div class="container">
+    <div id="game-area" class="container">
         <div class="row">
             <div id="scoreboard" class="col">
                 <div id="total-wins">Wins: 0</div>

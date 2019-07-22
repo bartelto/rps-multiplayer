@@ -16,7 +16,7 @@ let total = {
 };
 
 // hide game controls
-$("#game-controls").hide();
+$("#game-area").hide();
 
 // Your web app's Firebase configuration
 var firebaseConfig = {
@@ -110,15 +110,18 @@ $("#button-challenge").on("click", function() {
                 isChallenger = true;
                 console.log("opponent accepted!");
                 $('#challenge-modal').modal("hide");
+                $("#competitors").hide();
                 // reveal game controls
-                $("#game-controls").show();
+                $("#game-area").show();
             }
         });
     } // accepting a challenge
     else if ($(this).attr("data-action") === "accept") {
         matchRef.child("accepted").set(true); // won't affect other children
         $('#challenge-modal').modal("hide");
-        $("#game-controls").show();
+        $("#competitors").hide();
+        // reveal game controls
+        $("#game-area").show();
     }
 });
 
@@ -143,7 +146,8 @@ $(".attack").click(function() {
     playerAttack = $(this).attr("data-attack");
 
     // display attack on screen
-    $("#player-attack").text(playerAttack);
+    //$("#player-attack").text(playerAttack);
+    showAttack("player", playerAttack);
 
     if (isChallenger) { // challenger initiates the database communication
         // Add attack to the attacks list on the database
@@ -158,37 +162,49 @@ $(".attack").click(function() {
                 opponentAttack = snapshot.val();
                 console.log("received a counterattack of " + opponentAttack);
                 // display opponent's attack on screen
-                $("#opponent-attack").text(opponentAttack);
+                //$("#opponent-attack").text(opponentAttack);
+                showAttack("opponent", opponentAttack);
                 // both sides have attacked; determine winner
                 challengerOutcome = determineOutcome();
             }
         });
-    } else if (opponentAttack !== "") { // player is defender, and the challenger has already attacked
+    } else if (opponentAttack !== "") { // player is DEFENDER, and the challenger has already attacked
+        // display opponent's attack on screen
+        //$("#opponent-attack").text(opponentAttack);
+        showAttack("opponent", opponentAttack);
+        // place counterattack in database (now that the defender has chosen it)
+        playRef.child("counterattack").set(playerAttack);
         // both sides have attacked; determine winner
         challengerOutcome = determineOutcome();
-
-        // defender sends counterattack to challenger
-
     }
 });
 
-// defender listens for challenger to make an attack
+// DEFENDER listens for challenger to make an attack
 playsRef.on("child_added", function(snapshot) {
     if (snapshot.val().to === playerKey) { // i.e., the defender
+        playRef = snapshot.ref;
         opponentAttack = snapshot.val().attack;
-        // display opponent's attack on screen
-        $("#opponent-attack").text(opponentAttack);
         console.log("received an attack of " + opponentAttack);
-        if (playerAttack !== "") {
-            // place counterattack in database
-            snapshot.child("counterattack").set(playerAttack);
+
+        if (playerAttack !== "") { // player (DEFENDER) has already chosen a move
+            // display opponent's attack on screen
+            //$("#opponent-attack img").text(opponentAttack);
+            showAttack("opponent", opponentAttack);
+            // place counterattack in database (now that we have a place to put it)
+            playRef.child("counterattack").set(playerAttack);
             // both sides have attacked; determine winner
             challengerOutcome = determineOutcome();
         }
     }
 });
 
+function showAttack(person, attack) {
+    $(`#${person}-attack`).css("background-image", `url(./assets/images/${attack}.png)`);
+}
+
 function determineOutcome() { // from the perspective of the player
+    setTimeout(resetArena, 5000);
+
     if (playerAttack === opponentAttack) {
         total.draws++;
         $("#total-draws").text(`Draws: ${total.draws}`);
@@ -200,16 +216,21 @@ function determineOutcome() { // from the perspective of the player
         (playerAttack === "scissors" && opponentAttack === "rock")) {
         total.losses++;
         $("#total-losses").text(`Losses: ${total.losses}`);
-        $("#announcer").text("You win!");
+        $("#announcer").text(`${opponentName} wins!`);
         return "lose";
     } else {
-        $("#total-wins").text(`Wins: ${total.wins}`);
         total.wins++;
-        $("#announcer").text(`${opponentName} wins!`);
+        $("#total-wins").text(`Wins: ${total.wins}`);
+        $("#announcer").text("You win!");
         return "win"; 
     }   
+    
 }
 
 function resetArena() {
-
+    $("#announcer").text("Next round!");
+    $("#player-attack").css("background-image","");
+    $("#opponent-attack").css("background-image","");
+    playerAttack = "";
+    opponentAttack = "";
 }
