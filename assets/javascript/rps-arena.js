@@ -17,6 +17,12 @@ let total = {
 
 // hide game controls
 $("#game-area").hide();
+$("#chat-list").empty();
+
+//$(".jumbotron").click(function() {
+    //$(".jumbotron").addClass("compact", 10000);
+    //$(".jumbotron").animate({ color: "yellow" }, "normal");
+//});
 
 // Your web app's Firebase configuration
 var firebaseConfig = {
@@ -103,7 +109,8 @@ $("#button-challenge").on("click", function() {
             from: playerKey,
             accepted: false
         });
-        console.log(matchRef);
+
+        matchRef.onDisconnect().remove();
 
         matchRef.child("accepted").on("value", function(snapshot) {
             if (snapshot.val() === true) { // opponent has accepted the challenge
@@ -155,6 +162,7 @@ $(".attack").click(function() {
             to: opponentKey,
             attack: playerAttack
         });
+        playRef.onDisconnect().remove();
 
         // challenger listens for defender's counterattack
         playRef.child("counterattack").on("value", function(snapshot) {
@@ -199,7 +207,10 @@ playsRef.on("child_added", function(snapshot) {
 });
 
 function showAttack(person, attack) {
-    $(`#${person}-attack`).css("background-image", `url(./assets/images/${attack}.png)`);
+    
+    $(`#${person}-attack`)
+        .removeClass("rock paper scissors")
+        .addClass(attack);
 }
 
 function determineOutcome() { // from the perspective of the player
@@ -229,8 +240,60 @@ function determineOutcome() { // from the perspective of the player
 
 function resetArena() {
     $("#announcer").text("Next round!");
-    $("#player-attack").css("background-image","");
-    $("#opponent-attack").css("background-image","");
+    $("#player-attack").removeClass("rock paper scissors");
+    $("#opponent-attack").removeClass("rock paper scissors");
     playerAttack = "";
     opponentAttack = "";
+    
 }
+
+// Chat Logic
+let messagesRef = undefined;
+let messagesKey = "";
+
+$("#chat-send").click(function() {
+    event.preventDefault();
+
+    let message = $("#input-message").val().trim();
+
+    if (message !== "") {
+        database.ref("/messages").push({ 
+            to: opponentKey,
+            message: message
+        });
+    }
+    $("#input-message").val("");
+});
+
+database.ref("/messages").on("child_added", function(snapshot) {
+    
+    let newChat = snapshot.val();
+    if (newChat.to === playerKey || newChat.to === opponentKey) {
+        let newMessage = $("<li>")
+            .text(newChat.message)
+            .addClass("list-group-item");
+        if (newChat.to === opponentKey) {
+            newMessage
+                .addClass("player-message");
+        } else {
+            newMessage
+                .addClass("opponent-message");
+        }
+        $("#chat-list")
+            .append(newMessage)
+            .scrollTop( $("#chat-list")[0].scrollHeight - $("#chat-list").height() );
+
+        // delete message from database
+        database.ref("/messages").child(snapshot.key).remove();
+        
+    }   
+
+});
+
+// capture enter key to send chat message
+$(document).keypress(function(e) {
+    var keycode = (e.keyCode ? e.keyCode : e.which);
+    if (keycode == '13') {
+      $("#chat-send").click();
+    }
+});

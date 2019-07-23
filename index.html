@@ -7,18 +7,30 @@
     <title>RPS Arena</title>
     <link rel="stylesheet" href="assets/css/reset.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Share+Tech&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Orbitron&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/styles.css">
     <script
         src="https://code.jquery.com/jquery-3.4.1.js"
         integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
         crossorigin="anonymous"></script>
+    <script
+        src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"
+        integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30="
+        crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/6.3.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/6.3.0/firebase-database.js"></script>
     <script src="https://kit.fontawesome.com/9d112d245b.js"></script>
+    
 </head>
 <body>
     <header>
-        <h1>RPS Arena</h1>
+        <div class="jumbotron jumbotron-fluid">
+            <div class="container">
+                <h1>RPS</h1>
+                <h2>ARENA</h2>
+            </div>
+        </div>
     </header>
     <section id="instructions"> 
     </section>
@@ -26,11 +38,11 @@
     <section id="competitors" class="container">
         <div class="row">
             <div class="col">
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary btn-lg mx-auto" data-toggle="modal" data-target="#login-modal">Log in to play</button>
                 <h3>Available competitors</h2>
                 <div class="list-group" id="players-list">
                 </div>
-                 <!-- Button trigger modal -->
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#login-modal">Enter the arena</button>
             </div>
         </div>
     </section>
@@ -40,7 +52,7 @@
         <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="challengeModalLabel">Check in to play</h5>
+                <h5 class="modal-title" id="challengeModalLabel">Log in to play</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -85,25 +97,46 @@
 
     <div id="game-area" class="container">
         <div class="row">
-            <div id="scoreboard" class="col">
-                <div id="total-wins">Wins: 0</div>
-                <div id="total-losses">Losses: 0</div>
-                <div id="total-draws">Draws: 0</div>
+            <div class="col-sm-8">
+                <div id="scoreboard" class="row">
+                    <div id="total-wins">Wins: 0</div>
+                    <div id="total-losses">Losses: 0</div>
+                    <div id="total-draws">Draws: 0</div>
+                </div>
+                <div id="announcer" class="row">
+                </div>
+                <div id="attacks" class="row">
+                    <div id="player-attack" class="col">
+                    </div>
+                    <div id="opponent-attack" class="col">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id= "game-controls" class="btn-group btn-group-lg" role="group">
+                        <button type="button" class="btn btn-primary attack" data-attack="rock">rock</button>
+                        <button type="button" class="btn btn-primary attack" data-attack="paper">paper</button>
+                        <button type="button" class="btn btn-primary attack" data-attack="scissors">scissors</button>
+                    </div>
+                </div>
             </div>
-            <div id="announcer"class="col">
-            </div>
-        </div>
-        <div class="row">
-            <div id="player-attack" class="col">
-            </div>
-            <div id="opponent-attack" class="col">
-            </div>
-        </div>
-        <div class="row">
-            <div id= "game-controls" class="col">
-                <button type="button" class="btn btn-primary attack" data-attack="rock"><i class="fas fa-hand-rock"></i></button>
-                <button type="button" class="btn btn-primary attack" data-attack="paper"><i class="fas fa-hand-paper"></i></button>
-                <button type="button" class="btn btn-primary attack" data-attack="scissors"><i class="fas fa-hand-scissors"></i></button>
+        
+
+            <div class="col-sm-4">
+                <h5 class="card-title">Arena Chat</h5>
+                <div class="input-group mb-3">
+                    <ul id="chat-list" class="list-group">
+                        <li class="list-group-item player-message">You're going down.</li>
+                        <li class="list-group-item opponent-message">Come at me.</li>
+                        <li class="list-group-item player-message">Trust me, I will!</li>
+                        <li class="list-group-item opponent-message">Get ready!</li>
+                    </ul>
+                </div>  
+                <div class="input-group mb-3">
+                    <input type="text" id="input-message" class="form-control" placeholder="Enter message here" aria-label="Recipient's username" aria-describedby="basic-addon2">
+                    <div class="input-group-append">
+                        <button id="chat-send" class="btn btn-outline-secondary" type="button">Send</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
