@@ -58,13 +58,10 @@ $("#button-enter-name").on("click", function() {
         playerRef.onDisconnect().remove();
 
         playerKey = playerRef.key;
+        $("#players-list button").removeClass("disabled"); // enable other player buttons
         flagThisPlayer($(`button[data-key=${playerKey}]`)); 
     }
 });
-
-$("#login-modal").on('shown', function () {
-    $('#input-screen-name').focus();
-});  
 
 playersRef.on("child_added", function(snapshot) {
     //console.log("player added");
@@ -75,7 +72,11 @@ playersRef.on("child_added", function(snapshot) {
         .attr('data-toggle', "modal")
         .attr('data-target', '#challenge-modal');
     if (snapshot.key === playerKey) {
+        $("#players-list button").removeClass("disabled"); // enable player buttons
         flagThisPlayer(newPlayer);
+    }
+    if (playerKey === "") { // not logged in yet
+        newPlayer.addClass("disabled"); 
     }
     $("#players-list").append(newPlayer);
     $("#no-competitors").hide();
@@ -96,6 +97,14 @@ playersRef.on("child_removed", function(snapshot) {
     $(`button[data-key=${snapshot.key}]`).remove();
     if ($("#players-list li").length === 0) {
         $("#no-competitors").show(2000);
+    }
+
+    if (snapshot.key === opponentKey) {
+        $("#instructions").text(`${opponentName} has left the game. Choose a different competitor to play again.`);
+        opponentKey = "";
+        opponentName = "";
+        $("#game-area").hide();
+        $("#competitors").show(2000);
     }
 });
 
@@ -129,7 +138,15 @@ $("#button-challenge").on("click", function() {
                 console.log("opponent accepted!");
                 $('#challenge-modal').modal("hide");
                 $("#competitors").hide();
-                // reveal game controls
+
+                // reset & reveal game controls
+                total.wins = 0;
+                total.losses = 0;
+                total.draws = 0;
+                $("#total-wins").text(0);
+                $("#total-losses").text(0);
+                $("#total-draws").text(0);
+                $("#chat-list").empty();
                 $("#game-area").show();
             }
         });
