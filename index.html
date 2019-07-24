@@ -24,23 +24,24 @@
     
 </head>
 <body>
-    <header>
-        <div class="jumbotron jumbotron-fluid">
-            <div class="container">
-                <h1>RPS</h1>
-                <h2>ARENA</h2>
-                 <!-- Button trigger modal -->
-                 <button id="login-button" type="button" class="btn btn-primary btn-lg mx-auto" data-toggle="modal" data-target="#login-modal">Log in to play</button>
-            </div>
+    
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1>RPS</h1>
+            <h2>ARENA</h2>
+                <!-- Button trigger modal -->
+                <button id="login-button" type="button" class="btn btn-primary btn-lg mx-auto" data-toggle="modal" data-target="#login-modal">Log in to play</button>
         </div>
-    </header>
+    </div>
+    
     <section id="instructions"> 
     </section>
 
     <section id="competitors" class="container">
         <div class="row">
             <div class="col-sm-4 mx-auto">
-                <h3>Available competitors</h2>
+                <h3>Available competitors:  </h3>
+                <h4 id="no-competitors">none</h4>
                 <div class="list-group" id="players-list">
                 </div>
             </div>
@@ -59,16 +60,17 @@
             </div>
             <div class="modal-body">
                 <form>
-                    <div class="form-group">
+                    <div class="form-group" novalidate>
                         <label for="input-screen-name">Your screen name:</label>
-                        <input type="name" class="form-control" id="input-screen-name" aria-describedby="nameHelp" placeholder="e.g., Rock Hound, Paper Pusher, or Scissor Kicker">
+                        <input type="name" class="form-control" id="input-screen-name" aria-describedby="nameHelp" placeholder="e.g., Rock Hound, Paper Pusher, or Scissor Kicker" required>
+                        <div class="invalid-feedback">Please choose a screen name.</div>
                         <small id="nameHelp" class="form-text text-muted">Enter the name you'd like to use in the arena.</small>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Never mind</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" id="button-enter-name">Enter the waiting room</button>
+                <button type="button" class="btn btn-primary" id="button-enter-name" data-dismiss="modal">Enter the waiting room</button>
             </div>
         </div>
         </div>

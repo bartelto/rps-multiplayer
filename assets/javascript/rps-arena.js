@@ -44,20 +44,27 @@ let playsRef = database.ref("/plays"); // for storing the moves from each match
 let playRef = "";
 
 $("#button-enter-name").on("click", function() {
-    console.log("new player: " + $("#input-screen-name").val());
     playerName = $("#input-screen-name").val().trim();
-    // Add user to the players list.
-    let playerRef = playersRef.push({
-        name: playerName
-    });
-    console.log(playerRef);
 
-    // Remove user from the database when they disconnect.
-    playerRef.onDisconnect().remove();
-    console.log("setting playerkey");
-    playerKey = playerRef.key;
-    flagThisPlayer($(`button[data-key=${playerKey}]`));
+    if (playerName !== "") {
+        $("#login-button").hide();
+
+        // Add user to the players list on the database
+        let playerRef = playersRef.push({
+            name: playerName
+        });
+
+        // Remove user from the database when they disconnect.  
+        playerRef.onDisconnect().remove();
+
+        playerKey = playerRef.key;
+        flagThisPlayer($(`button[data-key=${playerKey}]`)); 
+    }
 });
+
+$("#login-modal").on('shown', function () {
+    $('#input-screen-name').focus();
+});  
 
 playersRef.on("child_added", function(snapshot) {
     //console.log("player added");
@@ -71,6 +78,7 @@ playersRef.on("child_added", function(snapshot) {
         flagThisPlayer(newPlayer);
     }
     $("#players-list").append(newPlayer);
+    $("#no-competitors").hide();
 });
 
 function flagThisPlayer (player) {
@@ -80,12 +88,15 @@ function flagThisPlayer (player) {
     player
         .text(player.text()+" ")
         .removeClass("competitor")
+        .addClass("disabled")
         .append(newBadge);
 }
 
 playersRef.on("child_removed", function(snapshot) {
-    console.log("child removed: " + snapshot.key);
     $(`button[data-key=${snapshot.key}]`).remove();
+    if ($("#players-list li").length === 0) {
+        $("#no-competitors").show(2000);
+    }
 });
 
 // clicking on a competitor's name
@@ -129,6 +140,7 @@ $("#button-challenge").on("click", function() {
         $("#competitors").hide();
         // reveal game controls
         $("#game-area").show();
+        $("#announcer").text("Choose your attack!");
     }
 });
 
@@ -218,7 +230,7 @@ function determineOutcome() { // from the perspective of the player
 
     if (playerAttack === opponentAttack) {
         total.draws++;
-        $("#total-draws").text(`Draws: ${total.draws}`);
+        $("#total-draws").text(total.draws);
         $("#announcer").text("It's a draw!");
         return "draw";
     } else if (
@@ -226,12 +238,12 @@ function determineOutcome() { // from the perspective of the player
         (playerAttack === "paper" && opponentAttack === "scissors") ||
         (playerAttack === "scissors" && opponentAttack === "rock")) {
         total.losses++;
-        $("#total-losses").text(`Losses: ${total.losses}`);
+        $("#total-losses").text(total.losses);
         $("#announcer").text(`${opponentName} wins!`);
         return "lose";
     } else {
         total.wins++;
-        $("#total-wins").text(`Wins: ${total.wins}`);
+        $("#total-wins").text(total.wins);
         $("#announcer").text("You win!");
         return "win"; 
     }   
@@ -239,7 +251,7 @@ function determineOutcome() { // from the perspective of the player
 }
 
 function resetArena() {
-    $("#announcer").text("Next round!");
+    $("#announcer").text("Next round! Choose your attack!");
     $("#player-attack").removeClass("rock paper scissors");
     $("#opponent-attack").removeClass("rock paper scissors");
     playerAttack = "";
